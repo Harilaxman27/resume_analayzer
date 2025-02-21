@@ -1,3 +1,4 @@
+<!-- views/index.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,13 +9,34 @@
 </head>
 <body>
     <div class="container">
-        <h1>Upload Your Resume</h1>
-        <p>Select a PDF resume, and our AI will analyze it to suggest improvements.</p>
-
-        <form action="/upload" method="POST" enctype="multipart/form-data">
-            <input type="file" name="resume" accept="application/pdf" required>
+        <h1>Resume Analyzer</h1>
+        <form action="/analyze" method="post" enctype="multipart/form-data">
+            <div class="upload-area">
+                <label for="resume">Upload your resume (PDF only)</label>
+                <input type="file" id="resume" name="resume" accept=".pdf" required>
+            </div>
             <button type="submit">Analyze Resume</button>
         </form>
+    </div>
+</body>
+</html>
+
+<!-- views/result.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Resume Analysis Results</h1>
+        <div class="analysis-content">
+            <pre><%= analysis %></pre>
+        </div>
+        <a href="/" class="back-button">Analyze Another Resume</a>
     </div>
 </body>
 </html>
