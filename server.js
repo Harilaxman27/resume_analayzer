@@ -1,53 +1,61 @@
-require('dotenv').config();
-const express = require('express');
-const multer = require('multer');
-const pdfParse = require('pdf-parse');
-const fs = require('fs');
-const path = require('path');
-const OpenAI = require('openai');
+const express = require("express");
+const multer = require("multer");
+const fs = require("fs");
+const axios = require("axios");
+const path = require("path");
+require("dotenv").config();
 
 const app = express();
-const upload = multer({ dest: 'uploads/' });
-const port = 3000;
+const PORT = 3000;
 
-// Initialize OpenAI API with the correct method
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Configure Multer for file uploads
+const upload = multer({ dest: "uploads/" });
 
-app.set('view engine', 'ejs');
-app.use(express.static('public'));
+// Set up EJS as the view engine
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static("public"));
 
-// Home route - Upload form
-app.get('/', (req, res) => {
-    res.render('index');
+// Load homepage
+app.get("/", (req, res) => {
+    res.render("index");
 });
 
-// Handle file upload and resume analysis
-app.post('/upload', upload.single('resume'), async (req, res) => {
+// Handle resume upload
+app.post("/upload", upload.single("resume"), async (req, res) => {
     try {
-        // Read uploaded PDF file
-        const pdfBuffer = fs.readFileSync(req.file.path);
-        const data = await pdfParse(pdfBuffer);
-        const resumeText = data.text;
+        // Ensure file is uploaded
+        if (!req.file) {
+            return res.status(400).send("No file uploaded.");
+        }
 
-        // Send extracted text to OpenAI for analysis
-        const aiResponse = await openai.chat.completions.create({
-            model: 'gpt-4',
-            messages: [{ role: 'system', content: `Analyze this resume and suggest improvements:\n\n${resumeText}` }],
-            max_tokens: 500
-        });
+        const filePath = req.file.path;
+        const fileData = fs.readFileSync(filePath, "utf8");
 
-        // Delete the uploaded file after processing
-        fs.unlinkSync(req.file.path);
+        // Send resume text to Gemini API
+        const response = await axios.post(
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+            {
+                contents: [{ parts: [{ text: `Analyze this resume and provide improvement suggestions:\n\n${fileData}` }] }]
+            },
+            { params: { key: process.env.GEMINI_API_KEY } }
+        );
 
-        // Render results page
-        res.render('result', { text: resumeText, suggestions: aiResponse.choices[0].message.content });
+        // Extract suggestions from the API response
+        const suggestions = response.data.candidates[0].content.parts[0].text;
+
+        // Delete uploaded file after processing
+        fs.unlinkSync(filePath);
+
+        // Render the results page with analysis suggestions
+        res.render("result", { suggestions });
     } catch (error) {
         console.error("Error processing resume:", error);
-        res.status(500).send('Error processing the resume. Please try again.');
+        res.status(500).send("Error processing the resume. Please try again.");
     }
 });
 
 // Start the server
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
 });
