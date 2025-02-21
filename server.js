@@ -37,7 +37,7 @@ app.use(express.static('public'));
 
 // Routes
 app.get('/', (req, res) => {
-  res.render('index'); // Render the upload page
+  res.render('index', { error: null }); // Pass `error` as null initially
 });
 
 app.post('/analyze', upload.single('resume'), async (req, res) => {
@@ -75,7 +75,7 @@ app.post('/analyze', upload.single('resume'), async (req, res) => {
     res.render('result', { analysis });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).render('index', { error: error.message });
+    res.status(500).render('index', { error: error.message }); // Pass `error` to `index.ejs`
   }
 });
 
