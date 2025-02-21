@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analysis Results</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .analysis-section {
+            margin-bottom: 20px;
+        }
+        .analysis-section h2 {
+            color: #333;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 5px;
+        }
+        .analysis-section p {
+            line-height: 1.6;
+            color: #555;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Resume Analysis Results</h1>
+        <div class="analysis-content">
+            <!-- Display the analysis in sections -->
+            <% if (analysis) { %>
+                <% const sections = analysis.split('\n\n'); %>
+                <% sections.forEach(section => { %>
+                    <div class="analysis-section">
+                        <h2><%= section.split(':')[0] %></h2>
+                        <p><%= section.split(':').slice(1).join(':').trim() %></p>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p>No analysis results found.</p>
+            <% } %>
+        </div>
+        <a href="/" class="back-button">Analyze Another Resume</a>
+    </div>
+</body>
+</html>

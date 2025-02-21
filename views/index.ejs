@@ -1,4 +1,3 @@
-<!-- views/index.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,37 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume Analyzer</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .upload-area {
+            margin: 20px 0;
+        }
+        .error-message {
+            color: red;
+            margin-bottom: 20px;
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+            color: #007BFF;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Resume Analyzer</h1>
-        <form action="/analyze" method="post" enctype="multipart/form-data">
+        <% if (error) { %>
+            <div class="error-message">
+                <p><%= error %></p>
+            </div>
+        <% } %>
+        <form action="/analyze" method="post" enctype="multipart/form-data" id="resume-form">
             <div class="upload-area">
-                <label for="resume">Upload your resume (PDF only)</label>
+                <label for="resume">Upload your resume (PDF only, max 5MB)</label>
                 <input type="file" id="resume" name="resume" accept=".pdf" required>
             </div>
-            <button type="submit">Analyze Resume</button>
+            <button type="submit" id="analyze-button">Analyze Resume</button>
+            <div id="loading">Analyzing... Please wait.</div>
         </form>
     </div>
-</body>
-</html>
-
-<!-- views/result.ejs -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis Results</title>
-    <link rel="stylesheet" href="/css/styles.css">
-</head>
-<body>
-    <div class="container">
-        <h1>Resume Analysis Results</h1>
-        <div class="analysis-content">
-            <pre><%= analysis %></pre>
-        </div>
-        <a href="/" class="back-button">Analyze Another Resume</a>
-    </div>
+    <script>
+        document.getElementById('resume-form').addEventListener('submit', function() {
+            document.getElementById('analyze-button').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+        });
+    </script>
 </body>
 </html>
