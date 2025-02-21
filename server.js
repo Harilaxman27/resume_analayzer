@@ -68,14 +68,32 @@ app.post('/analyze', upload.single('resume'), async (req, res) => {
     const result = await model.generateContent(prompt);
     const analysis = result.response.text();
 
+    // Extract relevant data from the analysis
+    const keywordsMatch = (analysis.match(/keywords?/gi) || []).length; // Example: Count keywords
+    const skillsFound = (analysis.match(/skills?/gi) || []).length; // Example: Count skills
+    const experienceMatch = analysis.match(/\d+\s*(years?|yrs?)/i); // Example: Extract experience
+    const experience = experienceMatch ? experienceMatch[0] : '0 yrs';
+
     // Delete uploaded file after analysis
     fs.unlinkSync(req.file.path);
 
-    // Render results page with analysis
-    res.render('result', { analysis });
+    // Render results page with analysis and extracted data
+    res.render('result', {
+      analysis,
+      keywordsMatch,
+      skillsFound,
+      experience,
+      sections: {
+        'Overview': 'General overview of the resume',
+        'Skills Analysis': 'Detailed breakdown of skills',
+        'Experience': 'Work experience analysis',
+        'Education': 'Educational background',
+        'Recommendations': 'Suggestions for improvement'
+      }
+    });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).render('index', { error: error.message }); // Pass `error` to `index.ejs`
+    res.status(500).render('index', { error: error.message });
   }
 });
 
