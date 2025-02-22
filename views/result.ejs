@@ -84,7 +84,8 @@
 <body>
     <div class="container">
         <h1>Resume Analysis Results</h1>
-        
+
+        <!-- Circular Progress Indicator -->
         <div class="score-container">
             <div class="circular-progress">
                 <svg width="150" height="150" viewBox="0 0 150 150">
@@ -96,10 +97,14 @@
             </div>
         </div>
 
+        <!-- Analysis Text -->
         <div class="analysis-content">
-            <pre><%= analysis %></pre>
+            <pre><%=
+                analysis.replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** from the text
+            %></pre>
         </div>
 
+        <!-- Back Button -->
         <a href="/" class="back-button">Analyze Another Resume</a>
     </div>
 
@@ -109,7 +114,10 @@
             const analysisText = document.querySelector('.analysis-content pre').textContent;
             const scoreMatch = analysisText.match(/Overall Strength Score:\s*(\d+(?:\.\d+)?)/);
             const score = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
-            
+
+            // Ensure the score is within the range of 0-10
+            const normalizedScore = Math.min(Math.max(score, 0), 10);
+
             const circle = document.getElementById('score-circle');
             const scoreText = document.querySelector('.score-text');
             const circumference = 2 * Math.PI * 60;
@@ -118,15 +126,15 @@
             circle.style.strokeDashoffset = circumference;
             
             setTimeout(() => {
-                const offset = circumference - (score / 10 * circumference);
+                const offset = circumference - (normalizedScore / 10 * circumference);
                 circle.style.strokeDashoffset = offset;
                 circle.style.transition = 'stroke-dashoffset 1s ease-in-out';
                 
                 let current = 0;
-                const increment = score / 50; // Smoother animation with 50 steps
+                const increment = normalizedScore / 50; // Smoother animation with 50 steps
                 const interval = setInterval(() => {
-                    if (current >= score) {
-                        scoreText.textContent = `${score.toFixed(1)}/10`;
+                    if (current >= normalizedScore) {
+                        scoreText.textContent = `${normalizedScore.toFixed(1)}/10`;
                         clearInterval(interval);
                     } else {
                         current += increment;
