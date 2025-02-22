@@ -55,12 +55,12 @@ app.post('/analyze', upload.single('resume'), async (req, res) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `Analyze this resume and provide detailed feedback in the following areas:
-    1. Key skills and qualifications
-    2. Experience summary
-    3. Education background
-    4. Areas for improvement
-    5. Overall strength score (1-10)
+    const prompt = `Analyze the following resume and provide detailed feedback in the following areas:
+    1. **Good Points**: Highlight the strengths of the resume.
+    2. **Areas to Improve**: Identify weaknesses in the resume.
+    3. **Suggested Changes**: Provide actionable suggestions to improve the resume.
+    4. **Overall Strength Score**: Rate the resume on a scale of 1-10 and explain the rating.
+    5. **Opportunities**: Suggest potential opportunities (e.g., job roles, industries) based on the resume.
 
     Resume content:
     ${textContent}`;
@@ -68,28 +68,17 @@ app.post('/analyze', upload.single('resume'), async (req, res) => {
     const result = await model.generateContent(prompt);
     const analysis = result.response.text();
 
-    // Extract relevant data from the analysis
-    const keywordsMatch = (analysis.match(/keywords?/gi) || []).length; // Example: Count keywords
-    const skillsFound = (analysis.match(/skills?/gi) || []).length; // Example: Count skills
-    const experienceMatch = analysis.match(/\d+\s*(years?|yrs?)/i); // Example: Extract experience
-    const experience = experienceMatch ? experienceMatch[0] : '0 yrs';
+    // Extract the overall strength score from the analysis
+    const scoreMatch = analysis.match(/Overall Strength Score:\s*(\d+\/\d+)/i);
+    const overallScore = scoreMatch ? scoreMatch[1] : 'N/A';
 
     // Delete uploaded file after analysis
     fs.unlinkSync(req.file.path);
 
-    // Render results page with analysis and extracted data
+    // Render results page with analysis
     res.render('result', {
       analysis,
-      keywordsMatch,
-      skillsFound,
-      experience,
-      sections: {
-        'Overview': 'General overview of the resume',
-        'Skills Analysis': 'Detailed breakdown of skills',
-        'Experience': 'Work experience analysis',
-        'Education': 'Educational background',
-        'Recommendations': 'Suggestions for improvement'
-      }
+      overallScore
     });
   } catch (error) {
     console.error('Error:', error);
